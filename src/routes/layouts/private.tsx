@@ -1,16 +1,38 @@
+import AppBreadcrumb from "@/components/app-breadcrumb";
 import { AppSidebar } from "@/components/app-sidebar";
+import { Button } from "@/components/ui/button";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
-import { Outlet } from "react-router";
+import { UploadIcon } from "lucide-react";
+import { Link, Outlet } from "react-router";
 
 export default function PrivateLayout() {
   return (
     <SidebarProvider>
-      <AppSidebar />
-      <SidebarInset>
-        <div className="dark flex flex-1 flex-col gap-4 p-2 pt-0 rounded-lg bg-content-background">
-          <Outlet />
-        </div>
-      </SidebarInset>
+      <div className="h-screen min-w-full overflow-hidden flex">
+        <AppSidebar />
+
+        <SidebarInset>
+          <div className="dark flex flex-1 flex-col p-6 pt-4 bg-background h-full rounded-sm">
+            <nav className="flex flex-row justify-between items-center mb-6 pb-4 border-b">
+              <AppBreadcrumb />
+              <Button className="ml-auto" variant="outline" asChild>
+                <Link to={"/dashboard/import"}>
+                  <UploadIcon
+                    className="-ms-1 opacity-60"
+                    size={16}
+                    aria-hidden="true"
+                  />
+                  Import CSV
+                </Link>
+              </Button>
+            </nav>
+
+            <main className="flex-1 min-w-full overflow-y-auto rounded-sm">
+              <Outlet />
+            </main>
+          </div>
+        </SidebarInset>
+      </div>
     </SidebarProvider>
   );
 }
