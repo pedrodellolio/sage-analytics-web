@@ -2,11 +2,15 @@ import AppBreadcrumb from "@/components/app-breadcrumb";
 import { AppSidebar } from "@/components/app-sidebar";
 import { Button } from "@/components/ui/button";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import { useAuth } from "@/hooks/use-auth";
 import { UploadIcon } from "lucide-react";
-import { Link, Outlet } from "react-router";
+import { Link, Navigate, Outlet } from "react-router";
 
 export default function PrivateLayout() {
-  return (
+  const { user, loading } = useAuth();
+  if (loading) return <div>Loading...</div>;
+
+  return user ? (
     <SidebarProvider>
       <div className="h-screen min-w-full overflow-hidden flex">
         <AppSidebar />
@@ -34,5 +38,7 @@ export default function PrivateLayout() {
         </SidebarInset>
       </div>
     </SidebarProvider>
+  ) : (
+    <Navigate to="/auth/login" />
   );
 }

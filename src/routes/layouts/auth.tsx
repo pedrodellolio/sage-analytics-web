@@ -1,11 +1,9 @@
-import { Outlet } from "react-router";
+import { useAuth } from "@/hooks/use-auth";
+import { Navigate, Outlet } from "react-router";
 
 export default function AuthLayout() {
-  return (
-    <div>
-      <h1>Auth</h1>
-      {/* will either be <Home/> or <Settings/> */}
-      <Outlet />
-    </div>
-  );
+  const { user, loading } = useAuth();
+  if (loading) return <div>Loading...</div>;
+  if (user) return <Navigate to="/" />;
+  return <Outlet />;
 }
