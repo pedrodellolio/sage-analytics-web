@@ -1,84 +1,16 @@
-import {
-  AlertCircleIcon,
-  FileArchiveIcon,
-  FileIcon,
-  FileSpreadsheetIcon,
-  FileTextIcon,
-  FileUpIcon,
-  HeadphonesIcon,
-  ImageIcon,
-  VideoIcon,
-  XIcon,
-} from "lucide-react";
-
+import { AlertCircleIcon, FileUpIcon, XIcon } from "lucide-react";
 import { formatBytes, useFileUpload } from "@/hooks/use-file-upload";
 import { Button } from "@/components/ui/button";
 import UploadInstructions from "./upload-instructions";
-
-// Create some dummy initial files
-const initialFiles = [
-  {
-    name: "document.pdf",
-    size: 528737,
-    type: "application/pdf",
-    url: "https://example.com/document.pdf",
-    id: "document.pdf-1744638436563-8u5xuls",
-  },
-  {
-    name: "intro.zip",
-    size: 252873,
-    type: "application/zip",
-    url: "https://example.com/intro.zip",
-    id: "intro.zip-1744638436563-8u5xuls",
-  },
-  {
-    name: "conclusion.xlsx",
-    size: 352873,
-    type: "application/xlsx",
-    url: "https://example.com/conclusion.xlsx",
-    id: "conclusion.xlsx-1744638436563-8u5xuls",
-  },
-];
-
-const getFileIcon = (file: { file: File | { type: string; name: string } }) => {
-  const fileType = file.file instanceof File ? file.file.type : file.file.type;
-  const fileName = file.file instanceof File ? file.file.name : file.file.name;
-
-  if (
-    fileType.includes("pdf") ||
-    fileName.endsWith(".pdf") ||
-    fileType.includes("word") ||
-    fileName.endsWith(".doc") ||
-    fileName.endsWith(".docx")
-  ) {
-    return <FileTextIcon className="size-4 opacity-60" />;
-  } else if (
-    fileType.includes("zip") ||
-    fileType.includes("archive") ||
-    fileName.endsWith(".zip") ||
-    fileName.endsWith(".rar")
-  ) {
-    return <FileArchiveIcon className="size-4 opacity-60" />;
-  } else if (
-    fileType.includes("excel") ||
-    fileName.endsWith(".xls") ||
-    fileName.endsWith(".xlsx")
-  ) {
-    return <FileSpreadsheetIcon className="size-4 opacity-60" />;
-  } else if (fileType.includes("video/")) {
-    return <VideoIcon className="size-4 opacity-60" />;
-  } else if (fileType.includes("audio/")) {
-    return <HeadphonesIcon className="size-4 opacity-60" />;
-  } else if (fileType.startsWith("image/")) {
-    return <ImageIcon className="size-4 opacity-60" />;
-  }
-  return <FileIcon className="size-4 opacity-60" />;
-};
+import { useImportTransactionData } from "@/hooks/use-import-transaction";
+import { useEffect } from "react";
+import FileCard from "./file-card";
 
 export default function FileUploader() {
   const maxSize = 100 * 1024 * 1024; // 10MB default
   const maxFiles = 12;
 
+  const { files: ctxFiles, setFiles } = useImportTransactionData();
   const [
     { files, isDragging, errors },
     {
@@ -95,8 +27,17 @@ export default function FileUploader() {
     multiple: true,
     maxFiles,
     maxSize,
-    initialFiles,
   });
+
+  useEffect(() => {
+    setFiles((prev) => {
+      const newIds = files.map((f) => f.id);
+      return [
+        ...prev.filter((f) => newIds.includes(f.id)),
+        ...files.filter((f) => !prev.some((p) => p.id === f.id)),
+      ];
+    });
+  }, [files]);
 
   return (
     <div className="flex flex-col gap-2">
@@ -116,7 +57,7 @@ export default function FileUploader() {
           aria-label="Upload files"
         />
 
-        <div className="flex flex-col items-center justify-center text-center">
+        <div className="flex flex-col items-center justify-center text-center py-4">
           <div
             className="bg-background mb-2 flex size-14 shrink-0 items-center justify-center rounded-full border"
             aria-hidden="true"
@@ -148,33 +89,14 @@ export default function FileUploader() {
       )}
 
       {/* File list */}
-      {files.length > 0 ? (
+      {ctxFiles.length > 0 ? (
         <div className="space-y-2">
-          {files.map((file) => (
+          {ctxFiles.map((file) => (
             <div
               key={file.id}
-              className="bg-background flex items-center justify-between gap-2 rounded-lg border p-2 pe-3"
+              className="bg-background flex items-center justify-between gap-2 rounded-lg border p-4 pe-4"
             >
-              <div className="flex items-center gap-3 overflow-hidden">
-                <div className="flex aspect-square size-10 shrink-0 items-center justify-center rounded border">
-                  {getFileIcon(file)}
-                </div>
-                <div className="flex min-w-0 flex-col gap-0.5">
-                  <p className="truncate text-[13px] font-medium">
-                    {file.file instanceof File
-                      ? file.file.name
-                      : file.file.name}
-                  </p>
-                  <p className="text-muted-foreground text-xs">
-                    {formatBytes(
-                      file.file instanceof File
-                        ? file.file.size
-                        : file.file.size
-                    )}
-                  </p>
-                </div>
-              </div>
-
+              <FileCard file={file} />
               <Button
                 size="icon"
                 variant="ghost"
@@ -188,7 +110,7 @@ export default function FileUploader() {
           ))}
 
           {/* Remove all files button */}
-          {files.length > 1 && (
+          {ctxFiles.length > 1 && (
             <div>
               <Button size="sm" variant="outline" onClick={clearFiles}>
                 Remove all files

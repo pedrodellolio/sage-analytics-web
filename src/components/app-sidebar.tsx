@@ -1,4 +1,4 @@
-import { Link } from "react-router";
+import { Link, useLocation } from "react-router";
 import {
   SidebarContent,
   SidebarFooter,
@@ -12,17 +12,32 @@ import {
   SidebarMenuItem,
   SidebarMenuButton,
 } from "./ui/sidebar";
-import { Home } from "lucide-react";
+import {
+  ChartSpline,
+  CreditCard,
+  LayoutDashboard,
+  List,
+  Wallet,
+  WalletMinimal,
+} from "lucide-react";
+import { cn } from "@/lib/utils";
 
 const items = [
   {
-    title: "Home",
-    url: "/",
-    icon: Home,
+    title: "Dashboard",
+    url: "/dashboard",
+    icon: ChartSpline,
+  },
+  {
+    title: "Transactions",
+    url: "/transactions",
+    icon: CreditCard,
   },
 ];
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const location = useLocation();
+
   return (
     <Sidebar
       variant="inset"
@@ -45,16 +60,33 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {items.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild>
-                    <Link to={item.url}>
-                      <item.icon />
-                      <span>{item.title}</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
+              {items.map((item) => {
+                const isActive = location.pathname === item.url;
+                return (
+                  <SidebarMenuItem key={item.title}>
+                    <SidebarMenuButton asChild>
+                      <Link to={item.url}>
+                        <item.icon
+                          className={cn(
+                            "transition-colors",
+                            isActive ? "text-accent" : "text-muted-foreground"
+                          )}
+                        />
+                        <span
+                          className={cn(
+                            "transition-colors",
+                            isActive
+                              ? "text-accent font-medium"
+                              : "text-muted-foreground"
+                          )}
+                        >
+                          {item.title}
+                        </span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                );
+              })}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>

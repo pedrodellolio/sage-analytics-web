@@ -1,4 +1,4 @@
-import { useEffect, useId, useMemo, useRef, useState } from "react";
+import { useId, useMemo, useRef, useState } from "react";
 import {
   type ColumnDef,
   type ColumnFiltersState,
@@ -53,12 +53,7 @@ import {
   DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
-  DropdownMenuPortal,
   DropdownMenuSeparator,
-  DropdownMenuShortcut,
-  DropdownMenuSub,
-  DropdownMenuSubContent,
-  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
@@ -192,7 +187,11 @@ const columns: ColumnDef<Transaction>[] = [
   },
 ];
 
-export default function DataTable() {
+interface Props {
+  data?: Transaction[];
+}
+
+export default function DataTable({ data }: Props) {
   const id = useId();
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
@@ -209,27 +208,17 @@ export default function DataTable() {
     },
   ]);
 
-  const [data, setData] = useState<Transaction[]>([]);
-  useEffect(() => {
-    async function fetchPosts() {
-      const res = await fetch("../../transactions-sample.json");
-      const data = await res.json();
-      setData(data);
-    }
-    fetchPosts();
-  }, []);
-
   const handleDeleteRows = () => {
     const selectedRows = table.getSelectedRowModel().rows;
-    const updatedData = data.filter(
+    const updatedData = data?.filter(
       (item) => !selectedRows.some((row) => row.original.id === item.id)
     );
-    setData(updatedData);
+    // setData(updatedData);
     table.resetRowSelection();
   };
 
   const table = useReactTable({
-    data,
+    data: data ?? [],
     columns,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
@@ -349,7 +338,10 @@ export default function DataTable() {
                 )}
               </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-auto min-w-36 p-3" align="start">
+            <PopoverContent
+              className="w-auto min-w-36 p-3 bg-secondary-foreground border-secondary/10"
+              align="start"
+            >
               <div className="space-y-3">
                 <div className="text-muted-foreground text-xs font-medium">
                   Filters
@@ -366,7 +358,7 @@ export default function DataTable() {
                       />
                       <Label
                         htmlFor={`${id}-${i}`}
-                        className="flex grow justify-between gap-2 font-normal"
+                        className="flex grow justify-between gap-2 font-normal text-background/80"
                       >
                         {value}{" "}
                         <span className="text-muted-foreground ms-2 text-xs">
@@ -391,7 +383,10 @@ export default function DataTable() {
                 View
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
+            <DropdownMenuContent
+              align="end"
+              className="bg-secondary-foreground border-secondary/10"
+            >
               <DropdownMenuLabel>Toggle columns</DropdownMenuLabel>
               {table
                 .getAllColumns()
@@ -400,7 +395,7 @@ export default function DataTable() {
                   return (
                     <DropdownMenuCheckboxItem
                       key={column.id}
-                      className="capitalize"
+                      className="capitalize text-background/80"
                       checked={column.getIsVisible()}
                       onCheckedChange={(value) =>
                         column.toggleVisibility(!!value)
@@ -693,46 +688,44 @@ function RowActions({}: { row: Row<Transaction> }) {
           </Button>
         </div>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
+      <DropdownMenuContent
+        align="end"
+        className="bg-secondary-foreground border-secondary/10"
+      >
         <DropdownMenuGroup>
           <DropdownMenuItem>
-            <span>Edit</span>
-            <DropdownMenuShortcut>⌘E</DropdownMenuShortcut>
+            <MenuTextItem text="Edit" />
+            {/* <DropdownMenuShortcut>⌘E</DropdownMenuShortcut> */}
           </DropdownMenuItem>
           <DropdownMenuItem>
-            <span>Duplicate</span>
-            <DropdownMenuShortcut>⌘D</DropdownMenuShortcut>
+            <MenuTextItem text="Details" />
+            {/* <DropdownMenuShortcut>⌘D</DropdownMenuShortcut> */}
           </DropdownMenuItem>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
-        <DropdownMenuGroup>
-          <DropdownMenuItem>
-            <span>Archive</span>
-            <DropdownMenuShortcut>⌘A</DropdownMenuShortcut>
-          </DropdownMenuItem>
-          <DropdownMenuSub>
-            <DropdownMenuSubTrigger>More</DropdownMenuSubTrigger>
-            <DropdownMenuPortal>
-              <DropdownMenuSubContent>
-                <DropdownMenuItem>Move to project</DropdownMenuItem>
-                <DropdownMenuItem>Move to folder</DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem>Advanced options</DropdownMenuItem>
-              </DropdownMenuSubContent>
-            </DropdownMenuPortal>
-          </DropdownMenuSub>
-        </DropdownMenuGroup>
-        <DropdownMenuSeparator />
-        <DropdownMenuGroup>
-          <DropdownMenuItem>Share</DropdownMenuItem>
-          <DropdownMenuItem>Add to favorites</DropdownMenuItem>
-        </DropdownMenuGroup>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem className="text-destructive focus:text-destructive">
-          <span>Delete</span>
-          <DropdownMenuShortcut>⌘⌫</DropdownMenuShortcut>
+        <DropdownMenuItem variant="destructive">
+          <MenuTextItem text="Delete" isDestructive />
+          {/* <DropdownMenuShortcut>⌘⌫</DropdownMenuShortcut> */}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
+  );
+}
+
+function MenuTextItem({
+  text,
+  isDestructive = false,
+}: {
+  text: string;
+  isDestructive?: boolean;
+}) {
+  return (
+    <span
+      className={`text-background ${
+        isDestructive && "text-destructive focus:text-destructive"
+      }`}
+    >
+      {text}
+    </span>
   );
 }

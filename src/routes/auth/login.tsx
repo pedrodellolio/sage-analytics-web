@@ -14,7 +14,7 @@ import { loginSchema, type LoginFormData } from "@/schemas/login-schema";
 import { useAuth } from "@/hooks/use-auth";
 import { Link } from "react-router";
 
-export default function Login() {
+export default function LoginRoute() {
   const { login } = useAuth();
 
   const form = useForm<LoginFormData>({

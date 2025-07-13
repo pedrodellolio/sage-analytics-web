@@ -1,49 +1,39 @@
-// export const getTransactions = async (groupByRecurrence: boolean = false) => {
-//   try {
-//     const groupBy = groupByRecurrence ? 1 : 0;
-//     const response = await axiosInstance.get<Transaction[]>(
-//       "/transactions?groupByRecurrence=" + groupBy
-//     );
-//     return response.data;
-//   } catch (error: any) {
-//     throw new Error(
-//       error.response?.data?.message || "Failed to fetch transactions"
-//     );
-//   }
-// };
+import type { Transaction } from "@/models/transaction";
+import axiosInstance from "./axios";
+import type { Bank } from "@/models/bank";
+import type { FileData } from "@/hooks/use-file-upload";
 
-// export const postTransactions = async (data: CreateTransactionForm) => {
-//   try {
-//     const response = await axiosInstance.post<Transaction>(
-//       "/transactions",
-//       data
-//     );
-//     return response.data;
-//   } catch (error: any) {
-//     throw new Error(
-//       error.response?.data?.message || "Failed to create transaction"
-//     );
-//   }
-// };
+export const getTransactions = async () => {
+  try {
+    const response = await axiosInstance.get<Transaction[]>("/transaction");
+    return response.data;
+  } catch (error: any) {
+    throw new Error(
+      error.response?.data?.message || "Failed to fetch transactions"
+    );
+  }
+};
 
-// export const deleteTransactions = async (id: string) => {
-//   try {
-//     const response = await axiosInstance.delete<boolean>(`/transactions/${id}`);
-//     return response.data;
-//   } catch (error: any) {
-//     throw new Error(
-//       error.response?.data?.message || "Failed to delete transaction"
-//     );
-//   }
-// };
+export const importTransactionsFile = async (
+  fileData: FileData[],
+  bank: Bank
+) => {
+  try {
+    const formData = new FormData();
+    formData.append("bank", bank);
+    fileData.forEach((data) => {
+      formData.append("files", data.file);
+    });
 
-// export const runRecurringPaymentsJob = async () => {
-//   try {
-//     const response = await axiosInstance.post("/transactions/run");
-//     return response.data;
-//   } catch (error: any) {
-//     throw new Error(
-//       error.response?.data?.message || "Failed to run recurring payments job"
-//     );
-//   }
-// };
+    const response = await axiosInstance.post<Transaction>(
+      "/transaction/import",
+      formData,
+      { headers: { "Content-Type": "multipart/form-data" } }
+    );
+    return response.data;
+  } catch (error: any) {
+    throw new Error(
+      error.response?.data?.message || "Failed to create transaction"
+    );
+  }
+};

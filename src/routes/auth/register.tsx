@@ -17,7 +17,7 @@ import {
 } from "@/schemas/register-schema";
 import { Link } from "react-router";
 
-export default function Login() {
+export default function LoginRoute() {
   const { register } = useAuth();
 
   const form = useForm<RegisterFormData>({
