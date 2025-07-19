@@ -20,24 +20,28 @@ export function MonthlySummaryCards() {
     queryFn: () => getWalletByPeriod(currentMonth, currentYear),
   });
 
-  console.log(data);
-  if (isLoading)
+  if (isLoading || isError || !data)
     return (
-      <div className="w-full h-full flex justify-center mt-24">
-        <Loader2Icon className="animate-spin" size={40} />
-      </div>
-    );
-  if (isError)
-    return (
-      <div className="w-full h-full flex justify-center mt-24">
-        <p className="text-sm text-muted-foreground">Error: {error.message}</p>
-      </div>
-    );
-  if (!data)
-    return (
-      <div className="w-full h-full flex justify-center mt-24">
-        <p className="text-sm text-muted-foreground">No data available</p>
-      </div>
+      <Card>
+        {" "}
+        {isLoading ? (
+          <div className="w-full h-full flex justify-center mt-24">
+            <Loader2Icon className="animate-spin" size={40} />
+          </div>
+        ) : isError ? (
+          <div className="w-full h-full flex justify-center mt-24">
+            <p className="text-sm text-muted-foreground">
+              Error: {error.message}
+            </p>
+          </div>
+        ) : (
+          !data && (
+            <div className="w-full h-full flex justify-center mt-24">
+              <p className="text-sm text-muted-foreground">No data available</p>
+            </div>
+          )
+        )}
+      </Card>
     );
 
   return (

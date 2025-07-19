@@ -12,14 +12,7 @@ import {
   SidebarMenuItem,
   SidebarMenuButton,
 } from "./ui/sidebar";
-import {
-  ChartSpline,
-  CreditCard,
-  LayoutDashboard,
-  List,
-  Wallet,
-  WalletMinimal,
-} from "lucide-react";
+import { ChartSpline, CreditCard, Tag } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const items = [
@@ -32,6 +25,11 @@ const items = [
     title: "Transactions",
     url: "/transactions",
     icon: CreditCard,
+  },
+  {
+    title: "Categories",
+    url: "/categories",
+    icon: Tag,
   },
 ];
 

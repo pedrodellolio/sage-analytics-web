@@ -10,8 +10,8 @@ export default function DashboardRoute() {
         <MonthlySummaryCards />
       </div>
 
-      <div className="grid grid-cols-1 gap-4 mb-4">
-        <Card className="h-96">
+      <div className="grid grid-cols-3 gap-4 mb-4">
+        <Card className="h-96 col-span-2">
           <CardHeader>
             <h1 className="text-muted-foreground">
               Spending and Earnings by Month
@@ -19,9 +19,8 @@ export default function DashboardRoute() {
           </CardHeader>
           <MonthlySummaryChart />
         </Card>
-      </div>
-      <div className="grid grid-cols-1 gap-4 mb-4">
-        <Card>
+
+        <Card className="h-96">
           <CardHeader>
             <h1 className="text-muted-foreground">
               Spending Distribution by Category

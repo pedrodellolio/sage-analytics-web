@@ -13,6 +13,7 @@ import { ThemeProvider } from "./components/theme-provider.tsx";
 import TransactionsRoute from "./routes/transactions.tsx";
 import DashboardRoute from "./routes/dashboard.tsx";
 import "./index.css";
+import CategoriesRoute from "./routes/category.tsx";
 
 const queryClient = new QueryClient();
 createRoot(document.getElementById("root")!).render(
@@ -29,6 +30,7 @@ createRoot(document.getElementById("root")!).render(
                 />
                 <Route path="dashboard" element={<DashboardRoute />} />
                 <Route path="transactions" element={<TransactionsRoute />} />
+                <Route path="categories" element={<CategoriesRoute />} />
                 <Route path="import" element={<UploadTransactionsRoute />} />
                 <Route
                   path="import/summary"
