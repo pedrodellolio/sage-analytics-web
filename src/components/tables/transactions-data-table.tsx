@@ -28,10 +28,8 @@ import {
   EllipsisIcon,
   FilterIcon,
   ListFilterIcon,
-  PlusIcon,
   TrashIcon,
 } from "lucide-react";
-
 import { cn } from "@/lib/utils";
 import {
   AlertDialog,
@@ -55,6 +53,9 @@ import {
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
@@ -84,35 +85,29 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import type { Transaction } from "@/models/transaction";
+import { getCategories } from "@/api/categories";
 import type { Category } from "@/models/category";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "./ui/dialog";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "./ui/form";
-import AddCategoryForm from "./forms/add-category-form";
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "../ui/command";
+import ConfirmCategoryDialog from "../dialogs/confirm-category-dialog";
+import { updateTransactionCategory } from "@/api/transactions";
 
 // Custom filter function for multi-column searching
-const multiColumnFilterFn: FilterFn<Category> = (row, _, filterValue) => {
+const multiColumnFilterFn: FilterFn<Transaction> = (row, _, filterValue) => {
   const searchableRowContent = `${row.original.title}`.toLowerCase();
   const searchTerm = (filterValue ?? "").toLowerCase();
   return searchableRowContent.includes(searchTerm);
 };
 
-const typeFilterFn: FilterFn<Category> = (
+const typeFilterFn: FilterFn<Transaction> = (
   row,
   columnId,
   filterValue: string[]
@@ -122,7 +117,7 @@ const typeFilterFn: FilterFn<Category> = (
   return filterValue.includes(type);
 };
 
-const columns: ColumnDef<Category>[] = [
+const columns: ColumnDef<Transaction>[] = [
   {
     id: "select",
     header: ({ table }) => (
@@ -157,19 +152,54 @@ const columns: ColumnDef<Category>[] = [
     enableHiding: false,
   },
   {
-    header: "ColorHex",
-    accessorKey: "colorHex",
+    header: "Occurred At",
+    accessorKey: "occurredAt",
+    cell: ({ row }) => {
+      const occurredAt = new Date(row.getValue("occurredAt"));
+      const formatted = new Intl.DateTimeFormat("pt-BR", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+      }).format(occurredAt);
+      return formatted;
+    },
+    size: 220,
+  },
+  {
+    header: "Category",
+    accessorKey: "category",
+    cell: ({ row }) =>
+      row.original.label && <Badge>{row.original.label.title}</Badge>,
+    size: 100,
+    filterFn: typeFilterFn,
+  },
+  {
+    header: "Type",
+    accessorKey: "type",
     cell: ({ row }) => (
       <Badge
-      // className={cn(
-      //   row.getValue("colorHex") === "Income" && "bg-success/60 text-foreground"
-      // )}
+        className={cn(
+          row.getValue("type") === "Income" && "bg-success/60 text-foreground"
+        )}
       >
-        {row.getValue("colorHex")}
+        {row.getValue("type")}
       </Badge>
     ),
     size: 100,
     filterFn: typeFilterFn,
+  },
+  {
+    header: "Amount",
+    accessorKey: "valueBrl",
+    cell: ({ row }) => {
+      const amount = parseFloat(row.getValue("valueBrl"));
+      const formatted = new Intl.NumberFormat("pt-BR", {
+        style: "currency",
+        currency: "BRL",
+      }).format(amount);
+      return formatted;
+    },
+    size: 120,
   },
   {
     id: "actions",
@@ -181,10 +211,10 @@ const columns: ColumnDef<Category>[] = [
 ];
 
 interface Props {
-  data?: Category[];
+  data?: Transaction[];
 }
 
-export default function CategoriesDataTable({ data }: Props) {
+export default function TransactionsDataTable({ data }: Props) {
   const id = useId();
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
@@ -403,40 +433,6 @@ export default function CategoriesDataTable({ data }: Props) {
           </DropdownMenu>
         </div>
         <div className="flex items-center gap-3">
-          {/* Create button */}
-          <Dialog>
-            <DialogTrigger asChild>
-              <Button className="ml-auto" variant="outline">
-                <PlusIcon
-                  className="-ms-1 opacity-60"
-                  size={16}
-                  aria-hidden="true"
-                />
-                Create
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <div className="flex flex-col gap-2 max-sm:items-center sm:flex-row sm:gap-4">
-                <div
-                  className="flex size-9 shrink-0 items-center justify-center rounded-full border"
-                  aria-hidden="true"
-                >
-                  <CircleAlertIcon className="opacity-80" size={16} />
-                </div>
-                <DialogHeader>
-                  <DialogTitle>Create new category</DialogTitle>
-                  <DialogDescription>
-                    <AddCategoryForm />
-                  </DialogDescription>
-                </DialogHeader>
-              </div>
-              <DialogFooter>
-                <DialogClose>Cancel</DialogClose>
-                <Button onClick={handleDeleteRows}>Create</Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
-
           {/* Delete button */}
           {table.getSelectedRowModel().rows.length > 0 && (
             <AlertDialog>
@@ -700,42 +696,102 @@ export default function CategoriesDataTable({ data }: Props) {
   );
 }
 
-function RowActions({}: { row: Row<Category> }) {
+function RowActions({ row }: { row: Row<Transaction> }) {
+  const [isCategoryAlertOpen, setIsCategoryAlertOpen] = useState(false);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+
+  const { data } = useQuery<Category[], Error>({
+    queryKey: ["categories"],
+    queryFn: getCategories,
+  });
+
+  const { mutateAsync } = useMutation({
+    mutationFn: ({
+      transactionId,
+      categoryId,
+    }: {
+      transactionId: string;
+      categoryId: string;
+    }) => updateTransactionCategory(transactionId, categoryId),
+    onSuccess: () => {
+      setIsDropdownOpen(false);
+      setIsCategoryAlertOpen(true);
+    },
+    onError: (err) => {
+      setIsDropdownOpen(false);
+      console.error(err);
+    },
+  });
+
+  const handleSelectCategory = async (categoryId: string) => {
+    await mutateAsync({ transactionId: row.original.id, categoryId });
+  };
+
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <div className="flex justify-end">
-          <Button
-            size="icon"
-            variant="ghost"
-            className="shadow-none"
-            aria-label="Edit item"
-          >
-            <EllipsisIcon size={16} aria-hidden="true" />
-          </Button>
-        </div>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent
-        align="end"
-        className="bg-secondary-foreground border-secondary/10"
-      >
-        <DropdownMenuGroup>
-          <DropdownMenuItem>
-            <MenuTextItem text="Edit" />
-            {/* <DropdownMenuShortcut>⌘E</DropdownMenuShortcut> */}
+    <>
+      <DropdownMenu open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>
+        <DropdownMenuTrigger asChild>
+          <div className="flex justify-end">
+            <Button
+              size="icon"
+              variant="ghost"
+              className="shadow-none"
+              aria-label="Edit item"
+            >
+              <EllipsisIcon size={16} aria-hidden="true" />
+            </Button>
+          </div>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end">
+          <DropdownMenuGroup>
+            <DropdownMenuItem>
+              <MenuTextItem text="Edit" />
+              {/* <DropdownMenuShortcut>⌘E</DropdownMenuShortcut> */}
+            </DropdownMenuItem>
+            <DropdownMenuItem>
+              <MenuTextItem text="Details" />
+              {/* <DropdownMenuShortcut>⌘D</DropdownMenuShortcut> */}
+            </DropdownMenuItem>
+            <DropdownMenuSub>
+              <DropdownMenuSubTrigger>Link to Category</DropdownMenuSubTrigger>
+              <DropdownMenuSubContent className="p-0">
+                <Command>
+                  <CommandInput
+                    placeholder="Filter category..."
+                    autoFocus={true}
+                    className="h-9"
+                  />
+                  <CommandList>
+                    <CommandEmpty>No category found.</CommandEmpty>
+                    <CommandGroup>
+                      {data?.map((category) => (
+                        <CommandItem
+                          key={category.id}
+                          value={category.id}
+                          onSelect={handleSelectCategory}
+                        >
+                          {category.title}
+                        </CommandItem>
+                      ))}
+                    </CommandGroup>
+                  </CommandList>
+                </Command>
+              </DropdownMenuSubContent>
+            </DropdownMenuSub>
+          </DropdownMenuGroup>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem variant="destructive">
+            <MenuTextItem text="Delete" isDestructive />
+            {/* <DropdownMenuShortcut>⌘⌫</DropdownMenuShortcut> */}
           </DropdownMenuItem>
-          <DropdownMenuItem>
-            <MenuTextItem text="Details" />
-            {/* <DropdownMenuShortcut>⌘D</DropdownMenuShortcut> */}
-          </DropdownMenuItem>
-        </DropdownMenuGroup>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem variant="destructive">
-          <MenuTextItem text="Delete" isDestructive />
-          {/* <DropdownMenuShortcut>⌘⌫</DropdownMenuShortcut> */}
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
+        </DropdownMenuContent>
+      </DropdownMenu>
+
+      <ConfirmCategoryDialog
+        isOpen={isCategoryAlertOpen}
+        setIsOpen={setIsCategoryAlertOpen}
+      />
+    </>
   );
 }
 
@@ -748,7 +804,7 @@ function MenuTextItem({
 }) {
   return (
     <span
-      className={`text-background ${
+      className={`text-background-foreground ${
         isDestructive && "text-destructive focus:text-destructive"
       }`}
     >

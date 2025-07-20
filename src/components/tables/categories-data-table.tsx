@@ -1,4 +1,4 @@
-import { useId, useMemo, useRef, useState } from "react";
+import { useId, useRef, useState } from "react";
 import {
   type ColumnDef,
   type ColumnFiltersState,
@@ -24,10 +24,9 @@ import {
   ChevronUpIcon,
   CircleAlertIcon,
   CircleXIcon,
-  Columns3Icon,
   EllipsisIcon,
-  FilterIcon,
   ListFilterIcon,
+  PlusIcon,
   TrashIcon,
 } from "lucide-react";
 
@@ -43,16 +42,13 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   DropdownMenu,
-  DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuGroup,
   DropdownMenuItem,
-  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
@@ -63,11 +59,6 @@ import {
   PaginationContent,
   PaginationItem,
 } from "@/components/ui/pagination";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
 import {
   Select,
   SelectContent,
@@ -83,26 +74,24 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import type { Transaction } from "@/models/transaction";
+import type { Category } from "@/models/category";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "../ui/dialog";
+import AddCategoryForm from "../forms/add-category-form";
 
 // Custom filter function for multi-column searching
-const multiColumnFilterFn: FilterFn<Transaction> = (row, _, filterValue) => {
+const multiColumnFilterFn: FilterFn<Category> = (row, _, filterValue) => {
   const searchableRowContent = `${row.original.title}`.toLowerCase();
   const searchTerm = (filterValue ?? "").toLowerCase();
   return searchableRowContent.includes(searchTerm);
 };
 
-const typeFilterFn: FilterFn<Transaction> = (
-  row,
-  columnId,
-  filterValue: string[]
-) => {
-  if (!filterValue?.length) return true;
-  const type = row.getValue(columnId) as string;
-  return filterValue.includes(type);
-};
-
-const columns: ColumnDef<Transaction>[] = [
+const columns: ColumnDef<Category>[] = [
   {
     id: "select",
     header: ({ table }) => (
@@ -137,48 +126,6 @@ const columns: ColumnDef<Transaction>[] = [
     enableHiding: false,
   },
   {
-    header: "OccurredAt",
-    accessorKey: "occurredAt",
-    cell: ({ row }) => {
-      const occurredAt = new Date(row.getValue("occurredAt"));
-      const formatted = new Intl.DateTimeFormat("pt-BR", {
-        day: "2-digit",
-        month: "2-digit",
-        year: "numeric",
-      }).format(occurredAt);
-      return formatted;
-    },
-    size: 220,
-  },
-  {
-    header: "Type",
-    accessorKey: "type",
-    cell: ({ row }) => (
-      <Badge
-        className={cn(
-          row.getValue("type") === "Income" && "bg-success/60 text-foreground"
-        )}
-      >
-        {row.getValue("type")}
-      </Badge>
-    ),
-    size: 100,
-    filterFn: typeFilterFn,
-  },
-  {
-    header: "Amount",
-    accessorKey: "valueBrl",
-    cell: ({ row }) => {
-      const amount = parseFloat(row.getValue("valueBrl"));
-      const formatted = new Intl.NumberFormat("pt-BR", {
-        style: "currency",
-        currency: "BRL",
-      }).format(amount);
-      return formatted;
-    },
-    size: 120,
-  },
-  {
     id: "actions",
     header: () => <span className="sr-only">Actions</span>,
     cell: ({ row }) => <RowActions row={row} />,
@@ -188,11 +135,12 @@ const columns: ColumnDef<Transaction>[] = [
 ];
 
 interface Props {
-  data?: Transaction[];
+  data?: Category[];
 }
 
-export default function DataTable({ data }: Props) {
+export default function CategoriesDataTable({ data }: Props) {
   const id = useId();
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
   const [pagination, setPagination] = useState<PaginationState>({
@@ -209,10 +157,10 @@ export default function DataTable({ data }: Props) {
   ]);
 
   const handleDeleteRows = () => {
-    const selectedRows = table.getSelectedRowModel().rows;
-    const updatedData = data?.filter(
-      (item) => !selectedRows.some((row) => row.original.id === item.id)
-    );
+    // const selectedRows = table.getSelectedRowModel().rows;
+    // const updatedData = data?.filter(
+    //   (item) => !selectedRows.some((row) => row.original.id === item.id)
+    // );
     // setData(updatedData);
     table.resetRowSelection();
   };
@@ -238,47 +186,6 @@ export default function DataTable({ data }: Props) {
     },
   });
 
-  // Get unique type values
-  const uniqueStatusValues = useMemo(() => {
-    const typeColumn = table.getColumn("type");
-
-    if (!typeColumn) return [];
-
-    const values = Array.from(typeColumn.getFacetedUniqueValues().keys());
-
-    return values.sort();
-  }, [table.getColumn("type")?.getFacetedUniqueValues()]);
-
-  // Get counts for each type
-  const typeCounts = useMemo(() => {
-    const typeColumn = table.getColumn("type");
-    if (!typeColumn) return new Map();
-    return typeColumn.getFacetedUniqueValues();
-  }, [table.getColumn("type")?.getFacetedUniqueValues()]);
-
-  const selectedStatuses = useMemo(() => {
-    const filterValue = table.getColumn("type")?.getFilterValue() as string[];
-    return filterValue ?? [];
-  }, [table.getColumn("type")?.getFilterValue()]);
-
-  const handleStatusChange = (checked: boolean, value: string) => {
-    const filterValue = table.getColumn("type")?.getFilterValue() as string[];
-    const newFilterValue = filterValue ? [...filterValue] : [];
-
-    if (checked) {
-      newFilterValue.push(value);
-    } else {
-      const index = newFilterValue.indexOf(value);
-      if (index > -1) {
-        newFilterValue.splice(index, 1);
-      }
-    }
-
-    table
-      .getColumn("type")
-      ?.setFilterValue(newFilterValue.length ? newFilterValue : undefined);
-  };
-
   return (
     <div className="space-y-4">
       {/* Filters */}
@@ -299,9 +206,9 @@ export default function DataTable({ data }: Props) {
               onChange={(e) =>
                 table.getColumn("title")?.setFilterValue(e.target.value)
               }
-              placeholder="Filter by title or email..."
+              placeholder="Filter by title..."
               type="text"
-              aria-label="Filter by title or email"
+              aria-label="Filter by title"
             />
             <div className="text-muted-foreground/80 pointer-events-none absolute inset-y-0 start-0 flex items-center justify-center ps-3 peer-disabled:opacity-50">
               <ListFilterIcon size={16} aria-hidden="true" />
@@ -321,95 +228,36 @@ export default function DataTable({ data }: Props) {
               </button>
             )}
           </div>
-          {/* Filter by type */}
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button variant="outline">
-                <FilterIcon
-                  className="-ms-1 opacity-60"
-                  size={16}
-                  aria-hidden="true"
-                />
-                Status
-                {selectedStatuses.length > 0 && (
-                  <span className="bg-background text-muted-foreground/70 -me-1 inline-flex h-5 max-h-full items-center rounded border px-1 font-[inherit] text-[0.625rem] font-medium">
-                    {selectedStatuses.length}
-                  </span>
-                )}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent
-              className="w-auto min-w-36 p-3 bg-secondary-foreground border-secondary/10"
-              align="start"
-            >
-              <div className="space-y-3">
-                <div className="text-muted-foreground text-xs font-medium">
-                  Filters
-                </div>
-                <div className="space-y-3">
-                  {uniqueStatusValues.map((value, i) => (
-                    <div key={value} className="flex items-center gap-2">
-                      <Checkbox
-                        id={`${id}-${i}`}
-                        checked={selectedStatuses.includes(value)}
-                        onCheckedChange={(checked: boolean) =>
-                          handleStatusChange(checked, value)
-                        }
-                      />
-                      <Label
-                        htmlFor={`${id}-${i}`}
-                        className="flex grow justify-between gap-2 font-normal text-background/80"
-                      >
-                        {value}{" "}
-                        <span className="text-muted-foreground ms-2 text-xs">
-                          {typeCounts.get(value)}
-                        </span>
-                      </Label>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </PopoverContent>
-          </Popover>
-          {/* Toggle columns visibility */}
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline">
-                <Columns3Icon
-                  className="-ms-1 opacity-60"
-                  size={16}
-                  aria-hidden="true"
-                />
-                View
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent
-              align="end"
-              className="bg-secondary-foreground border-secondary/10"
-            >
-              <DropdownMenuLabel>Toggle columns</DropdownMenuLabel>
-              {table
-                .getAllColumns()
-                .filter((column) => column.getCanHide())
-                .map((column) => {
-                  return (
-                    <DropdownMenuCheckboxItem
-                      key={column.id}
-                      className="capitalize text-background/80"
-                      checked={column.getIsVisible()}
-                      onCheckedChange={(value) =>
-                        column.toggleVisibility(!!value)
-                      }
-                      onSelect={(event) => event.preventDefault()}
-                    >
-                      {column.id}
-                    </DropdownMenuCheckboxItem>
-                  );
-                })}
-            </DropdownMenuContent>
-          </DropdownMenu>
         </div>
         <div className="flex items-center gap-3">
+          {/* Create button */}
+          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+            <DialogTrigger asChild>
+              <Button className="ml-auto" variant="outline">
+                <PlusIcon
+                  className="-ms-1 opacity-60"
+                  size={16}
+                  aria-hidden="true"
+                />
+                Create
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <div className="flex flex-col gap-2 items-center sm:flex-row sm:gap-4">
+                <div
+                  className="flex size-9 shrink-0 items-center justify-center rounded-full border"
+                  aria-hidden="true"
+                >
+                  <CircleAlertIcon className="opacity-80" size={16} />
+                </div>
+                <DialogHeader>
+                  <DialogTitle>Create new category</DialogTitle>
+                </DialogHeader>
+              </div>
+              <AddCategoryForm toggleDialog={setIsDialogOpen} />
+            </DialogContent>
+          </Dialog>
+
           {/* Delete button */}
           {table.getSelectedRowModel().rows.length > 0 && (
             <AlertDialog>
@@ -673,7 +521,7 @@ export default function DataTable({ data }: Props) {
   );
 }
 
-function RowActions({}: { row: Row<Transaction> }) {
+function RowActions({}: { row: Row<Category> }) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>

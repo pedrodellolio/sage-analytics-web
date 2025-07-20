@@ -1,5 +1,5 @@
 import { getCategories } from "@/api/categories";
-import CategoriesDataTable from "@/components/categories-data-table";
+import CategoriesDataTable from "@/components/tables/categories-data-table";
 import type { Category } from "@/models/category";
 import { useQuery } from "@tanstack/react-query";
 

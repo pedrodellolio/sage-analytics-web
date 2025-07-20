@@ -1,5 +1,5 @@
 import { getTransactions } from "@/api/transactions";
-import DataTable from "@/components/data-table";
+import TransactionsDataTable from "@/components/tables/transactions-data-table";
 import type { Transaction } from "@/models/transaction";
 import { useQuery } from "@tanstack/react-query";
 
@@ -18,7 +18,7 @@ export default function TransactionsRoute() {
   return (
     <div>
       {isFetching && !isLoading && <span>Updating…</span>}
-      <DataTable data={data} />
+      <TransactionsDataTable data={data} />
     </div>
   );
 }

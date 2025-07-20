@@ -37,3 +37,20 @@ export const importTransactionsFile = async (
     );
   }
 };
+
+export const updateTransactionCategory = async (
+  id: string,
+  categoryId: string
+) => {
+  try {
+    const response = await axiosInstance.put<Transaction[]>(
+      "/transaction/update-category",
+      { id, categoryId }
+    );
+    return response.data;
+  } catch (error: any) {
+    throw new Error(
+      error.response?.data?.message || "Failed to update transactions"
+    );
+  }
+};
