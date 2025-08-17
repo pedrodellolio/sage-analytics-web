@@ -1,6 +1,20 @@
 import type { AddCategoryFormData } from "@/schemas/category-schema";
 import axiosInstance from "./axios";
 import type { Category } from "@/models/category";
+import type { SpendingCategory } from "@/models/spending-category";
+
+export const getSpendingCategoryChart = async (month: number, year: number) => {
+  try {
+    const response = await axiosInstance.get<SpendingCategory[]>(
+      `/category/spendingCategoryDistribution?month=${month}&year=${year}`
+    );
+    return response.data;
+  } catch (error: any) {
+    throw new Error(
+      error.response?.data?.message || "Failed to fetch categories"
+    );
+  }
+};
 
 export const getCategories = async () => {
   try {

@@ -1,12 +1,20 @@
 import { AlertCircleIcon, FileUpIcon, XIcon } from "lucide-react";
-import { formatBytes, useFileUpload } from "@/hooks/use-file-upload";
+import {
+  formatBytes,
+  useFileUpload,
+  type FileData,
+} from "@/hooks/use-file-upload";
 import { Button } from "@/components/ui/button";
 import UploadInstructions from "./upload-instructions";
 import { useImportTransactionData } from "@/hooks/use-import-transaction";
 import { useEffect } from "react";
 import FileCard from "./file-card";
 
-export default function FileUploader() {
+interface Props {
+  onFileSelect?: (files: FileData[]) => void;
+}
+
+export default function FileUploader({ onFileSelect }: Props) {
   const maxSize = 100 * 1024 * 1024; // 10MB default
   const maxFiles = 12;
 
@@ -20,7 +28,6 @@ export default function FileUploader() {
       handleDrop,
       openFileDialog,
       removeFile,
-      clearFiles,
       getInputProps,
     },
   ] = useFileUpload({
@@ -32,10 +39,11 @@ export default function FileUploader() {
   useEffect(() => {
     setFiles((prev) => {
       const newIds = files.map((f) => f.id);
-      return [
-        ...prev.filter((f) => newIds.includes(f.id)),
-        ...files.filter((f) => !prev.some((p) => p.id === f.id)),
-      ];
+      const oldFiles = prev.filter((f) => newIds.includes(f.id));
+      const newFiles = files.filter((f) => !prev.some((p) => p.id === f.id));
+      const updatedFiles = [...oldFiles, ...newFiles];
+      onFileSelect && onFileSelect(updatedFiles);
+      return updatedFiles;
     });
   }, [files]);
 
@@ -65,10 +73,10 @@ export default function FileUploader() {
             <FileUpIcon className="size-6 opacity-60" />
           </div>
           <p className="mb-1.5 font-medium">Upload files</p>
-          <p className="text-muted-foreground mb-2 text-sm">
+          <p className="text-foreground/60 mb-2 text-sm">
             Drag & drop or click to browse
           </p>
-          <div className="text-muted-foreground/70 flex flex-wrap justify-center gap-1 text-xs">
+          <div className="text-foreground/60/70 flex flex-wrap justify-center gap-1 text-xs">
             <span>All files</span>
             <span>∙</span>
             <span>Max {maxFiles} files</span>
@@ -90,7 +98,7 @@ export default function FileUploader() {
 
       {/* File list */}
       {ctxFiles.length > 0 ? (
-        <div className="space-y-2">
+        <div className="space-y-2 max-h-[420px] overflow-y-scroll">
           {ctxFiles.map((file) => (
             <div
               key={file.id}
@@ -100,7 +108,7 @@ export default function FileUploader() {
               <Button
                 size="icon"
                 variant="ghost"
-                className="text-muted-foreground/80 hover:text-foreground -me-2 size-8 hover:bg-transparent"
+                className="text-foreground/60/80 hover:text-foreground -me-2 size-8 hover:bg-transparent"
                 onClick={() => removeFile(file.id)}
                 aria-label="Remove file"
               >
@@ -110,13 +118,13 @@ export default function FileUploader() {
           ))}
 
           {/* Remove all files button */}
-          {ctxFiles.length > 1 && (
+          {/* {ctxFiles.length > 1 && (
             <div>
               <Button size="sm" variant="outline" onClick={clearFiles}>
                 Remove all files
               </Button>
             </div>
-          )}
+          )} */}
         </div>
       ) : (
         <UploadInstructions />

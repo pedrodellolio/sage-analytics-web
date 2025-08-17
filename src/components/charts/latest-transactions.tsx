@@ -1,15 +1,16 @@
 import { getTransactions } from "@/api/transactions";
-import TransactionsDataTable from "@/components/tables/transactions-data-table";
 import type { Transaction } from "@/models/transaction";
 import { useQuery } from "@tanstack/react-query";
+import TransactionsDataTable from "../tables/transactions-data-table";
 
-export default function TransactionsRoute() {
+const LIMIT = 10;
+export default function LatestTransactions() {
   const { data, error, isLoading, isError, isFetching } = useQuery<
     Transaction[],
     Error
   >({
     queryKey: ["transactions"],
-    queryFn: () => getTransactions(),
+    queryFn: () => getTransactions(LIMIT),
   });
 
   if (isLoading) return <p>Loading transactions...</p>;
@@ -18,7 +19,7 @@ export default function TransactionsRoute() {
   return (
     <div>
       {isFetching && !isLoading && <span>Updating…</span>}
-      <TransactionsDataTable data={data} />
+      <TransactionsDataTable data={data} readonly />
     </div>
   );
 }

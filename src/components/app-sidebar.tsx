@@ -48,12 +48,12 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             <span className="sr-only">Logo</span>
             <h1 className="text-md font-bold text-accent">Sage</h1>
           </Link>
-          <SidebarTrigger className="text-muted-foreground/80 hover:text-foreground/80 hover:bg-transparent!" />
+          <SidebarTrigger className="text-foreground/60/80 hover:text-foreground/80 hover:bg-transparent!" />
         </div>
       </SidebarHeader>
       <SidebarContent className="gap-0 mt-3 pt-3">
         <SidebarGroup className="px-1 pt-1">
-          <SidebarGroupLabel className="uppercase text-muted-foreground/65">
+          <SidebarGroupLabel className="uppercase text-foreground/60">
             Menu
           </SidebarGroupLabel>
           <SidebarGroupContent>
@@ -65,17 +65,17 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                     <SidebarMenuButton asChild>
                       <Link to={item.url}>
                         <item.icon
-                          className={cn(
-                            "transition-colors",
-                            isActive ? "text-accent" : "text-muted-foreground"
-                          )}
+                          color={`${
+                            isActive ? "var(--accent)" : "var(--foreground)"
+                          }`}
+                          className={cn("transition-colors")}
                         />
                         <span
                           className={cn(
                             "transition-colors",
                             isActive
                               ? "text-accent font-medium"
-                              : "text-muted-foreground"
+                              : "text-foreground/70"
                           )}
                         >
                           {item.title}

@@ -56,7 +56,7 @@ export default function FileCard({ file }: Props) {
       </div>
       <div className="flex min-w-0 flex-col gap-0.5">
         <p className="truncate text-sm font-medium">{file.file.name}</p>
-        <p className="text-muted-foreground text-xs">
+        <p className="text-foreground/60 text-xs">
           {formatBytes(file.file.size)}
         </p>
       </div>

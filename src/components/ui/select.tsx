@@ -31,7 +31,7 @@ function SelectTrigger({
     <SelectPrimitive.Trigger
       data-slot="select-trigger"
       className={cn(
-        "border-input text-foreground data-[placeholder]:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive flex h-9 w-full items-center justify-between gap-2 rounded-md border bg-transparent px-3 py-2 text-sm shadow-xs transition-[color,box-shadow] outline-none focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50 *:data-[slot=select-value]:flex *:data-[slot=select-value]:items-center *:data-[slot=select-value]:gap-2 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&>span]:line-clamp-1",
+        "border-input text-foreground data-[placeholder]:text-foreground/60 focus-visible:border-ring focus-visible:ring-ring/50 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive flex h-9 w-full items-center justify-between gap-2 rounded-md border bg-transparent px-3 py-2 text-sm shadow-xs transition-[color,box-shadow] outline-none focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50 *:data-[slot=select-value]:flex *:data-[slot=select-value]:items-center *:data-[slot=select-value]:gap-2 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&>span]:line-clamp-1",
         className
       )}
       {...props}
@@ -40,7 +40,7 @@ function SelectTrigger({
       <SelectPrimitive.Icon asChild>
         <ChevronDownIcon
           size={16}
-          className="text-muted-foreground/80 in-aria-invalid:text-destructive/80 shrink-0"
+          className="text-foreground/60/80 in-aria-invalid:text-destructive/80 shrink-0"
         />
       </SelectPrimitive.Icon>
     </SelectPrimitive.Trigger>
@@ -89,7 +89,7 @@ function SelectLabel({
     <SelectPrimitive.Label
       data-slot="select-label"
       className={cn(
-        "text-muted-foreground py-1.5 ps-8 pe-2 text-xs font-medium",
+        "text-foreground/60 py-1.5 ps-8 pe-2 text-xs font-medium",
         className
       )}
       {...props}
@@ -144,7 +144,7 @@ function SelectScrollUpButton({
     <SelectPrimitive.ScrollUpButton
       data-slot="select-scroll-up-button"
       className={cn(
-        "text-muted-foreground/80 flex cursor-default items-center justify-center py-1",
+        "text-foreground/60/80 flex cursor-default items-center justify-center py-1",
         className
       )}
       {...props}
@@ -162,7 +162,7 @@ function SelectScrollDownButton({
     <SelectPrimitive.ScrollDownButton
       data-slot="select-scroll-down-button"
       className={cn(
-        "text-muted-foreground/80 flex cursor-default items-center justify-center py-1",
+        "text-foreground/60/80 flex cursor-default items-center justify-center py-1",
         className
       )}
       {...props}

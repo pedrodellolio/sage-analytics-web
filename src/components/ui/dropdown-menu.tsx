@@ -204,7 +204,7 @@ function DropdownMenuLabel({
       data-slot="dropdown-menu-label"
       data-inset={inset}
       className={cn(
-        "text-muted-foreground px-2 py-1.5 text-xs font-medium data-[inset]:pl-8",
+        "text-foreground/60 px-2 py-1.5 text-xs font-medium data-[inset]:pl-8",
         className
       )}
       {...props}
@@ -233,7 +233,7 @@ function DropdownMenuShortcut({
     <kbd
       data-slot="dropdown-menu-shortcut"
       className={cn(
-        "bg-background text-muted-foreground/70 ms-auto -me-1 inline-flex h-5 max-h-full items-center rounded border px-1 font-[inherit] text-[0.625rem] font-medium",
+        "bg-background text-foreground/60/70 ms-auto -me-1 inline-flex h-5 max-h-full items-center rounded border px-1 font-[inherit] text-[0.625rem] font-medium",
         className
       )}
       {...props}
@@ -266,10 +266,7 @@ function DropdownMenuSubTrigger({
       {...props}
     >
       {children}
-      <ChevronRightIcon
-        size={16}
-        className="text-muted-foreground/80 ml-auto"
-      />
+      <ChevronRightIcon size={16} className="text-foreground/60/80 ml-auto" />
     </DropdownMenuPrimitive.SubTrigger>
   );
 }

@@ -1,19 +1,19 @@
-import FileCard from "@/components/file-card";
-import { Button } from "@/components/ui/button";
 import { useImportTransactionData } from "@/hooks/use-import-transaction";
-import { Link, useNavigate } from "react-router";
+import { useNavigate } from "react-router";
+import FileCard from "../file-card";
+import NextButton from "../next-button";
 
-export function SummaryTransactionsRoute() {
+export default function SummaryStep() {
   const navigate = useNavigate();
   const { files, selectedBank } = useImportTransactionData();
-
-  if (!files || selectedBank) navigate("/dashboard");
+  console.log(files, selectedBank);
+  if (!files || files.length <= 0 || selectedBank) navigate("/dashboard");
 
   return (
     <div className="flex min-h-full flex-col">
-      <h1 className="text-lg font-bold">Summary</h1>
-      <p className="text-muted-foreground text-sm mb-8">
-        <span className="text-accent font-bold">{files.length} files</span> were
+      <p className="text-foreground/60 text-sm mb-8">
+        <span className="text-accent font-bold">{files.length} files</span>{" "}
+        {files.length > 1 ? "were " : "was "}
         imported from{" "}
         <span className="text-accent font-bold">{selectedBank}</span>{" "}
         successfully!
@@ -30,11 +30,7 @@ export function SummaryTransactionsRoute() {
         ))}
       </ul>
 
-      <footer className="flex justify-end mt-auto border-t pt-6">
-        <Link to="/dashboard">
-          <Button>Go to Dashboard</Button>
-        </Link>
-      </footer>
+      <NextButton onClick={() => navigate("/dashboard")} />
     </div>
   );
 }

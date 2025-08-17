@@ -16,28 +16,25 @@ export function MonthlySummaryCards() {
   const currentYear = getCurrentYear();
 
   const { data, error, isLoading, isError } = useQuery<Wallet, Error>({
-    queryKey: ["wallet", currentMonth, currentYear],
-    queryFn: () => getWalletByPeriod(currentMonth, currentYear),
+    queryKey: ["wallet", currentMonth - 1, currentYear],
+    queryFn: () => getWalletByPeriod(currentMonth - 1, currentYear),
   });
 
   if (isLoading || isError || !data)
     return (
       <Card>
-        {" "}
         {isLoading ? (
           <div className="w-full h-full flex justify-center mt-24">
             <Loader2Icon className="animate-spin" size={40} />
           </div>
         ) : isError ? (
           <div className="w-full h-full flex justify-center mt-24">
-            <p className="text-sm text-muted-foreground">
-              Error: {error.message}
-            </p>
+            <p className="text-sm text-foreground/60">Error: {error.message}</p>
           </div>
         ) : (
           !data && (
             <div className="w-full h-full flex justify-center mt-24">
-              <p className="text-sm text-muted-foreground">No data available</p>
+              <p className="text-sm text-foreground/60">No data available</p>
             </div>
           )
         )}
@@ -48,7 +45,7 @@ export function MonthlySummaryCards() {
     <>
       <Card className="gap-2">
         <CardHeader className="flex flex-row w-full items-center justify-between">
-          <h1 className="text-muted-foreground">Balance</h1>
+          <h1 className="text-foreground/60">Balance</h1>
           <div className="bg-background p-1.5 rounded-md">
             <TrendingUpDown size={20} color="var(--muted-foreground)" />
           </div>
@@ -61,7 +58,7 @@ export function MonthlySummaryCards() {
       </Card>
       <Card className="gap-2">
         <CardHeader className="flex flex-row w-full items-center justify-between">
-          <h1 className="text-muted-foreground">Earnings</h1>
+          <h1 className="text-foreground/60">Earnings</h1>
           <div className="bg-background p-1.5 rounded-md">
             <TrendingUp size={20} color="var(--muted-foreground)" />
           </div>
@@ -72,7 +69,7 @@ export function MonthlySummaryCards() {
       </Card>
       <Card className="gap-2">
         <CardHeader className="flex flex-row w-full items-center justify-between">
-          <h1 className="text-muted-foreground">Spending</h1>
+          <h1 className="text-foreground/60">Spending</h1>
           <div className="bg-background p-1.5 rounded-md">
             <TrendingDown size={20} color="var(--muted-foreground)" />
           </div>

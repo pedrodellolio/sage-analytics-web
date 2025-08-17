@@ -54,7 +54,7 @@ export const useFileUpload = (
   const {
     maxFiles = Infinity,
     maxSize = Infinity,
-    accept = "*",
+    accept = ".csv,text/csv",
     multiple = false,
     onFilesChange,
     onFilesAdded,

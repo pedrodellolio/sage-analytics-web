@@ -47,7 +47,7 @@ export function ComboboxDropdownMenu({ text }: Props) {
         <span className="bg-primary text-primary-foreground mr-2 rounded-lg px-2 py-1 text-xs">
           {label}
         </span>
-        <span className="text-muted-foreground">{text}</span>
+        <span className="text-foreground/60">{text}</span>
       </p>
       <DropdownMenu open={open} onOpenChange={setOpen}>
         <DropdownMenuTrigger asChild>

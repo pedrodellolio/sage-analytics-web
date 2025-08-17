@@ -1,7 +1,7 @@
-import { getWalletsByYear } from "@/api/wallets";
-import type { Wallet } from "@/models/wallet";
-import { getCurrentYear, MONTHS } from "@/utils/date";
-import { formatCurrency, formatMonth } from "@/utils/formatters";
+import { getSpendingCategoryChart } from "@/api/categories";
+import type { SpendingCategory } from "@/models/spending-category";
+import { getCurrentMonth, getCurrentYear } from "@/utils/date";
+import { formatCurrency } from "@/utils/formatters";
 import { useQuery } from "@tanstack/react-query";
 import { Loader2Icon } from "lucide-react";
 import { useMemo } from "react";
@@ -16,22 +16,23 @@ import {
   YAxis,
 } from "recharts";
 
-export function MonthlySummaryChart() {
+export function CategoriesTotalSummaryChart() {
+  const currentMonth = getCurrentMonth();
   const currentYear = getCurrentYear();
 
-  const { data, error, isLoading, isError } = useQuery<Wallet[], Error>({
-    queryKey: ["wallets", currentYear],
-    queryFn: () => getWalletsByYear(currentYear),
+  const { data, error, isLoading, isError } = useQuery<
+    SpendingCategory[],
+    Error
+  >({
+    queryKey: ["spendingCategory", currentMonth - 1],
+    queryFn: () => getSpendingCategoryChart(currentMonth - 1, currentYear),
   });
 
   const completeData = useMemo(() => {
     if (!data) return [];
 
-    const monthMap = new Map(data.map((wallet) => [wallet.month, wallet]));
-
-    return Array.from({ length: 12 }, (_, i) => {
-      const month = i + 1;
-      return monthMap.get(month) ?? { month, value: 0 };
+    return data.map((d) => {
+      return { name: d.title, value: Number(d.valueBrl) };
     });
   }, [data]);
 
@@ -47,7 +48,7 @@ export function MonthlySummaryChart() {
         <p className="text-sm text-foreground/60">Error: {error.message}</p>
       </div>
     );
-  if (data?.length === 0)
+  if (completeData?.length === 0 || completeData.every((d) => d.value === 0))
     return (
       <div className="w-full h-full flex justify-center mt-24">
         <p className="text-sm text-foreground/60">No data available</p>
@@ -57,6 +58,7 @@ export function MonthlySummaryChart() {
   return (
     <ResponsiveContainer width="100%" height="100%">
       <BarChart
+        layout="vertical"
         width={500}
         height={300}
         data={completeData}
@@ -70,12 +72,12 @@ export function MonthlySummaryChart() {
         <CartesianGrid vertical={false} strokeWidth={0.1} />
         <XAxis
           fontSize={14}
-          dataKey="month"
-          tickFormatter={(month) => MONTHS[month - 1]}
+          dataKey="value"
+          type="number"
           axisLine={false}
           tickLine={false}
         />
-        <YAxis hide />
+        <YAxis type="category" dataKey="name" fontSize={12} />
         <Tooltip
           cursor={{ fill: "var(--background)" }}
           contentStyle={{
@@ -92,7 +94,6 @@ export function MonthlySummaryChart() {
           itemStyle={{ color: "var(--secondary)", fontSize: 12 }}
           wrapperStyle={{ margin: 0, lineHeight: 1 }}
           formatter={formatCurrency}
-          labelFormatter={(label) => formatMonth(label, { full: true })}
         />
         <Legend
           iconType="square"
@@ -111,18 +112,9 @@ export function MonthlySummaryChart() {
         <Bar
           radius={0}
           barSize={32}
-          dataKey="incomeBrl"
-          name="Earnings"
-          stackId="a"
+          dataKey="value"
+          name="Categories"
           fill="var(--chart-2)"
-        />
-        <Bar
-          radius={0}
-          barSize={10}
-          dataKey="expensesBrl"
-          name="Spending"
-          stackId="a"
-          fill="var(--chart-1)"
         />
       </BarChart>
     </ResponsiveContainer>

@@ -210,12 +210,12 @@ export default function CategoriesDataTable({ data }: Props) {
               type="text"
               aria-label="Filter by title"
             />
-            <div className="text-muted-foreground/80 pointer-events-none absolute inset-y-0 start-0 flex items-center justify-center ps-3 peer-disabled:opacity-50">
+            <div className="text-foreground/60/80 pointer-events-none absolute inset-y-0 start-0 flex items-center justify-center ps-3 peer-disabled:opacity-50">
               <ListFilterIcon size={16} aria-hidden="true" />
             </div>
             {Boolean(table.getColumn("title")?.getFilterValue()) && (
               <button
-                className="text-muted-foreground/80 hover:text-foreground focus-visible:border-ring focus-visible:ring-ring/50 absolute inset-y-0 end-0 flex h-full w-9 items-center justify-center rounded-e-md transition-[color,box-shadow] outline-none focus:z-10 focus-visible:ring-[3px] disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50"
+                className="text-foreground/60/80 hover:text-foreground focus-visible:border-ring focus-visible:ring-ring/50 absolute inset-y-0 end-0 flex h-full w-9 items-center justify-center rounded-e-md transition-[color,box-shadow] outline-none focus:z-10 focus-visible:ring-[3px] disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50"
                 aria-label="Clear filter"
                 onClick={() => {
                   table.getColumn("title")?.setFilterValue("");
@@ -269,7 +269,7 @@ export default function CategoriesDataTable({ data }: Props) {
                     aria-hidden="true"
                   />
                   Delete
-                  <span className="bg-background text-muted-foreground/70 -me-1 inline-flex h-5 max-h-full items-center rounded border px-1 font-[inherit] text-[0.625rem] font-medium">
+                  <span className="bg-background text-foreground/60/70 -me-1 inline-flex h-5 max-h-full items-center rounded border px-1 font-[inherit] text-[0.625rem] font-medium">
                     {table.getSelectedRowModel().rows.length}
                   </span>
                 </Button>
@@ -407,7 +407,7 @@ export default function CategoriesDataTable({ data }: Props) {
       {/* Pagination */}
       <div className="flex items-center justify-between gap-8">
         {/* Results per page */}
-        <div className="flex items-center gap-3">
+        {/* <div className="flex items-center gap-3">
           <Label htmlFor={id} className="max-sm:sr-only">
             Rows per page
           </Label>
@@ -428,11 +428,11 @@ export default function CategoriesDataTable({ data }: Props) {
               ))}
             </SelectContent>
           </Select>
-        </div>
+        </div> */}
         {/* Page number information */}
-        <div className="text-muted-foreground flex grow justify-end text-sm whitespace-nowrap">
+        <div className="text-foreground/60 flex grow justify-end text-sm whitespace-nowrap">
           <p
-            className="text-muted-foreground text-sm whitespace-nowrap"
+            className="text-foreground/60 text-sm whitespace-nowrap"
             aria-live="polite"
           >
             <span className="text-foreground">

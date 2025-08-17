@@ -5,28 +5,31 @@ const instructions = [
   {
     icon: FileText,
     title: "Choose a valid file format: CSV",
-    description: "Only CSV (Comma Separated Values) files are supported for import.",
+    description:
+      "Only CSV (Comma Separated Values) files are supported for import.",
     example: "example-data.csv",
   },
   {
     icon: Table,
     title: "Ensure the file contains the required columns",
-    description: "Your CSV must include these exact column names: Date, Description, Amount.",
+    description:
+      "Your CSV must include these exact column names: Date, Description, Amount.",
     example: "Date,Description,Amount",
   },
   {
     icon: Table,
     title: "Include a header row with clear, unique names",
-    description: "The first row should contain column headers that clearly identify each data field.",
+    description:
+      "The first row should contain column headers that clearly identify each data field.",
     example: "2024-01-15,Office Supplies,125.50",
   },
-]
+];
 export default function UploadInstructions() {
   return (
     <div className="mt-4">
       <div className="flex flex-row items-center gap-4">
         <h2 className="text-lg font-semibold">Instructions</h2>
-        <small className="flex flex-row items-center gap-2 mt-1 text-muted-foreground">
+        <small className="flex flex-row items-center gap-2 mt-1 text-foreground/60">
           <CircleCheckBig color="var(--accent)" size={18} />
           Follow these steps for successful import
         </small>
@@ -49,15 +52,11 @@ export default function UploadInstructions() {
 
                 <div className="flex-1">
                   <div className="flex items-start gap-3 mb-1">
-                    <span className="text-accent font-bold">
-                      {index + 1}.
-                    </span>
-                    <h3 className="font-medium">
-                      {instruction.title}
-                    </h3>
+                    <span className="text-accent font-bold">{index + 1}.</span>
+                    <h3 className="font-medium">{instruction.title}</h3>
                   </div>
 
-                  <p className="text-muted-foreground text-sm ml-6">
+                  <p className="text-foreground/60 text-sm ml-6">
                     {instruction.description}
                   </p>
                 </div>

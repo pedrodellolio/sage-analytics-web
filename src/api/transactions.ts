@@ -3,9 +3,11 @@ import axiosInstance from "./axios";
 import type { Bank } from "@/models/bank";
 import type { FileData } from "@/hooks/use-file-upload";
 
-export const getTransactions = async () => {
+export const getTransactions = async (limit: number = 0) => {
   try {
-    const response = await axiosInstance.get<Transaction[]>("/transaction");
+    const response = await axiosInstance.get<Transaction[]>(
+      `/transaction?limit=${limit}`
+    );
     return response.data;
   } catch (error: any) {
     throw new Error(
